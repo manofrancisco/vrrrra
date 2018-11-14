@@ -1,21 +1,5 @@
 import pygame
-import random
 from engine import *
-
-
-def check_collision(obj):
-    if(obj.x < 90 and obj.x > 50 or obj.x+obj.w < 90 and obj.x+obj.w>50):
-        if(obj.y-obj.h < y_position):
-            return True
-    return False
-
-
-def check_projectile_collision(proj, obj):
-    if(obj.x <= proj.x):
-        if(proj.y > obj.y and proj.x < obj.x+obj.h):
-            return True
-    return False
-
 
 
 pygame.init()
@@ -23,7 +7,7 @@ pygame.init()
 win = pygame.display.set_mode((1000,300))
 
 
-obj_coord = [2100,2500,2700,2800]
+obj_coord = [1000,1800,2500,2700,2800,3000, 3500,4000,4400,4800,5000]
 
 clr = [127,127,127]
 
@@ -42,66 +26,42 @@ projectiles = []
 objects = []
 velocity = -3
 distance_run = 0
+shooting = False
+start = obj_coord[0]
 ending = obj_coord[-1]
-while run == True:
-    if(distance_run > ending + 2500 ):
-        print("U win")
-        run = False
-    if(len(obj_coord)>0):
-        if(distance_run + 900 > obj_coord[0]):
-            objects.append(Object(obj_coord[0]))
-            obj_coord.pop(0)
-    distance_run -= velocity
-    print(distance_run)
-    velocity = int(-10 * (energy+10)/100)
-    pygame.time.delay(10)
+
+while run :
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        
+    if(not run):
+        break
+    
+    
+    velocity = int(-15 * (energy+10)/100)
+    distance_run,run = update_distance(distance_run,velocity,ending)
+    if(not run):
+        break
+    print(distance_run)
+    pygame.time.delay(10)
 
-    clr[0] += random.randint(-6,6) if clr[0] > 6 and clr[0] < 249 else 0
-    if(clr[0] < 6 or clr[0]>249):
-        clr[0] = 127
-        
-        clr[1] += random.randint(-6,6) if clr[1] > 6 and clr[1] < 249 else 0
-        if(clr[1] < 6 or clr[1]>249):
-            clr[1] = 127
-        
-        clr[2] += random.randint(-6,6) if clr[2] > 6 and clr[2] < 249 else 0
-        if(clr[2] < 6 or clr[2]>249):
-            clr[2] = 127
+    clr = change_colors(clr)
     
 
     win.fill(tuple(clr))
 
-    for obj in objects:
-        if(obj.x <= -20):
-            objects.remove(obj)
-        if check_collision(obj):
-            run = False
-        draw = True
-        for proj in projectiles:
-            if check_projectile_collision(proj,obj):
-                objects.remove(obj)
-                projectiles.remove(proj)
-                draw = False
-        if draw:
-            pygame.draw.rect(win,obj.color,(obj.x,obj.y,obj.w,obj.h))
-        obj.move(velocity)
 
-
-    if(energy == 0):
-        print('U ded')
+    projectiles = move_projectiles(projectiles,win)
+    objects,run = move_objects(objects,projectiles,y_position,velocity,win)
+    if(not run):
         break
-    #obj.move(energy)
 
-
-    if(counter == 50):
-        energy -= 1
-        counter = 0
-    else:
-        counter += 1
-
+    objects,obj_coord = update_objects(objects,obj_coord,distance_run)
+    counter,energy,run = update_energy(counter,energy)
+    if(not run):
+        break
+    
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_n]:
@@ -110,8 +70,7 @@ while run == True:
             armed = True
     else:
         arming = False    
-
-        
+    
     if not armed:
         if keys[pygame.K_SPACE]:
             if(not jump_status):
@@ -136,14 +95,10 @@ while run == True:
                 armed = False
                 p = Projectile(y_position)
                 projectiles.append(p)
+                energy -= 1
         else: 
             shooting = False
 
-
-
-    for p in projectiles:
-        p.move()
-        pygame.draw.rect(win,(127,0,0),(p.x,p.y,p.side,p.side,))
 
     if(jump_status):
         y_velocity -= 2

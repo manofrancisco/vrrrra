@@ -2,13 +2,14 @@ import pygame
 from engine import *
 
 
+
 pygame.init()
 
 win = pygame.display.set_mode((1000,300))
 
 
 obj_coord = [1000,1800,2500,2700,2800,3000, 3500,4000,4400,4800,5000]
-
+f_coord = [1500]
 clr = [127,127,127]
 
 y_position = 250
@@ -24,11 +25,12 @@ arming = False
 shoot = False
 projectiles = []
 objects = []
+floats = []
 velocity = -3
 distance_run = 0
 shooting = False
 start = obj_coord[0]
-ending = obj_coord[-1]
+ending = max(obj_coord[-1],f_coord[-1])
 
 while run :
     for event in pygame.event.get():
@@ -39,25 +41,28 @@ while run :
         break
     
     
-    velocity = int(-15 * (energy+10)/100)
+    velocity = int(-4* (energy+10)/100)
     distance_run,run = update_distance(distance_run,velocity,ending)
     if(not run):
         break
-    print(distance_run)
     pygame.time.delay(10)
 
     clr = change_colors(clr)
-    
-
     win.fill(tuple(clr))
-
+    pygame.draw.rect(win,(0,0,0),(0,0,40,100))
 
     projectiles = move_projectiles(projectiles,win)
     objects,run = move_objects(objects,projectiles,y_position,velocity,win)
     if(not run):
         break
+    floats,run = move_floats(floats,projectiles,velocity,y_position,win)
+    if(not run):
+        break
 
     objects,obj_coord = update_objects(objects,obj_coord,distance_run)
+
+    floats,f_coord = update_floats(floats,f_coord,distance_run)
+
     counter,energy,run = update_energy(counter,energy)
     if(not run):
         break

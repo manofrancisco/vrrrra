@@ -1,18 +1,39 @@
 import pygame
 from engine import *
+import time
+
+
+pygame.font.init() # you have to call this at the start, 
+                   # if you want to use this module.
 
 
 
 pygame.init()
-
-win = pygame.display.set_mode((1000,300))
-
-
-obj_coord = [1000,1800,2500,2700,2800,3000, 3500,4000,4400,4800,5000]
-f_coord = [1500]
 clr = [127,127,127]
+clr = change_colors(clr)
+win = pygame.display.set_mode((1000,500))
+win.fill(tuple(clr))
 
-y_position = 250
+myfont = pygame.font.SysFont('Arial', 20)
+
+textsurface = myfont.render('Hey, to play press ENTER\n Space to jump, N to Prep \n B to shoot and M to heal', False, (0, 0, 0))
+
+win.blit(textsurface,(300,100))
+pygame.display.update()
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    k = pygame.key.get_pressed()
+    if(k[pygame.K_SPACE]):
+        print('starting game')
+        break    
+
+
+obj_coord = [1000,1800,2500,2700,2800,3000, 3500,4000,4400,5000]
+f_coord = [1500,2000,2500,3000,3500,4000]
+
+y_position = 450
 y_velocity = 0
 run = True
 jump_status = False
@@ -31,8 +52,11 @@ distance_run = 0
 shooting = False
 start = obj_coord[0]
 ending = max(obj_coord[-1],f_coord[-1])
+ending = 10000
 
+start = time.time()
 while run :
+    print(len(pygame.event.get()))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -41,7 +65,7 @@ while run :
         break
     
     
-    velocity = int(-4* (energy+10)/100)
+    velocity = int(-8* (energy+10)/100)
     distance_run,run = update_distance(distance_run,velocity,ending)
     if(not run):
         break
@@ -49,7 +73,12 @@ while run :
 
     clr = change_colors(clr)
     win.fill(tuple(clr))
-    pygame.draw.rect(win,(0,0,0),(0,0,40,100))
+    curr = time.time()
+    
+    textsurface = myfont.render(str(curr-start), False, (0, 0, 0))
+
+    win.blit(textsurface,(0,0))
+
 
     projectiles = move_projectiles(projectiles,win)
     objects,run = move_objects(objects,projectiles,y_position,velocity,win)
@@ -68,7 +97,7 @@ while run :
         break
     
     keys = pygame.key.get_pressed()
-
+    
     if keys[pygame.K_n]:
         if(not arming):
             arming = True
@@ -80,7 +109,7 @@ while run :
         if keys[pygame.K_SPACE]:
             if(not jump_status):
                 jump_status = True
-                y_velocity = 34
+                y_velocity = 30
     else:
         pygame.draw.rect(win,(255,0,0),(50,50,10,10))
         if keys[pygame.K_m]:
@@ -106,11 +135,11 @@ while run :
 
 
     if(jump_status):
-        y_velocity -= 2
+        y_velocity -= 1
 
     y_position -= y_velocity
 
-    if(y_position >= 250):
+    if(y_position >= 450):
         jump_status = False
         y_velocity = 0        
     

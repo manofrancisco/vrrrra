@@ -5,7 +5,7 @@ import pygame
 class Object:
     def __init__(self,x):
         self.x=x
-        self.y=250
+        self.y=450
         self.w=40
         self.h=60
         self.color = (0,0,200)
@@ -31,7 +31,7 @@ class Float:
     y = 250
     def __init__(self,x):
         self.x=x
-        self.y=210
+        self.y=390
         self.w=40
         self.h=60
         self.color = (0,100,200)
@@ -56,13 +56,6 @@ def check_float_collision(f,y_position):
             return True
     return False
 
-'''
-def check_projectile_collision(proj, obj):
-    if(obj.x <= proj.x):
-        if(proj.y > obj.y and proj.x < obj.x+obj.h):
-            return True
-    return False
-'''
 
 def check_projectile_collision(proj, obj):
     if(obj.x <= proj.x):
@@ -143,7 +136,7 @@ def update_energy(counter,energy):
     if(energy == 0):
         print('U ded')
         run = False
-    if(counter == 5):
+    if(counter == 20):
         energy -= 1
         counter = 0
     else:

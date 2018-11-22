@@ -29,9 +29,9 @@ class Projectile:
     
 class Float:
     y = 250
-    def __init__(self,x):
+    def __init__(self,x,y):
         self.x=x
-        self.y=390
+        self.y=y
         self.w=40
         self.h=60
         self.color = (0,100,200)
@@ -162,7 +162,7 @@ def update_objects(objects,obj_coord,distance_run):
 
 def update_floats(floats,f_coord,distance_run):
     if(len(f_coord)>0):
-        if(distance_run + 900 > f_coord[0]):
-            floats.append(Float(f_coord[0]-distance_run))
+        if(distance_run + 900 > f_coord[0][0]):
+            floats.append(Float(f_coord[0][0]-distance_run,f_coord[0][1]))
             f_coord.pop(0)
     return floats,f_coord

@@ -3,9 +3,9 @@ import pygame
 
 
 class Object:
-    def __init__(self,x):
+    def __init__(self,x,y):
         self.x=x
-        self.y=450
+        self.y=y
         self.w=40
         self.h=60
         self.color = (0,0,200)
@@ -51,8 +51,10 @@ def check_object_collision(obj,y_position):
     return False
 
 def check_float_collision(f,y_position):
-    if(f.x < 90 and f.x > 50 or f.x+f.w < 90 and f.x+f.w>50):
-        if(y_position > f.y-f.h or y_position - 60 > f.y-f.h ):
+    if(f.x < 90 and f.x > 50 or f.x+f.w < 90 and f.x+f.w>5):
+        top = y_position
+        bottom = y_position + 60
+        if( (top > f.y and top < f.y+f.h) or (bottom > f.y and bottom < f.y+f.h)):
             return True
     return False
 
@@ -60,7 +62,6 @@ def check_float_collision(f,y_position):
 def check_projectile_collision(proj, obj):
     if(obj.x <= proj.x):
         if((obj.y < proj.y and proj.y < obj.y+obj.h ) or (obj.y < proj.y+proj.side and proj.y+proj.side < obj.y+obj.h)):
-            print('hit')
             return True
     return False
 
@@ -93,7 +94,7 @@ def move_objects(objects,projectiles,y_position,velocity,win):
         if(obj.x <= -20):
             objects.remove(obj)
         if check_object_collision(obj,y_position):
-            print("col")
+            
             return objects,False
         draw = True
         for proj in projectiles:
@@ -110,16 +111,14 @@ def move_objects(objects,projectiles,y_position,velocity,win):
 
 def move_floats(floats,projectiles,velocity,y_position,win):
     run = True
-    print(velocity)
     for f in floats:
         if(f.x <= -20):
             floats.remove(f)
         if check_float_collision(f,y_position):
-            print("col")
+
             return floats,False
         draw = True
         for proj in projectiles:
-            print((proj.y,f.y,f.h))
             if check_projectile_collision(proj,f):
                 floats.remove(f)
                 projectiles.remove(proj)
@@ -134,7 +133,6 @@ def move_floats(floats,projectiles,velocity,y_position,win):
 def update_energy(counter,energy):
     run = True
     if(energy == 0):
-        print('U ded')
         run = False
     if(counter == 20):
         energy -= 1
@@ -148,15 +146,14 @@ def update_distance(distance_run,velocity,ending):
     run = True
     distance_run -= velocity
     if(distance_run > ending + 500):
-        print("U win")
         run = False
     return distance_run,run
 
 
-def update_objects(objects,obj_coord,distance_run):
+def update_objects(objects,obj_coord,distance_run,y):
     if(len(obj_coord)>0):
         if(distance_run + 900 > obj_coord[0]):
-            objects.append(Object(obj_coord[0]-distance_run))
+            objects.append(Object(obj_coord[0]-distance_run,y))
             obj_coord.pop(0)
     return objects,obj_coord
 

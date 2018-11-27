@@ -3,6 +3,8 @@ from engine import *
 import time
 
 
+
+
 pygame.font.init() # you have to call this at the start, 
                    # if you want to use this module.
 
@@ -11,7 +13,8 @@ pygame.init()
 
 clr = [127,127,127]
 clr = change_colors(clr)
-win = pygame.display.set_mode((1000,500))
+screen_size = 800
+win = pygame.display.set_mode((1000,screen_size))
 win.fill(tuple(clr))
 
 
@@ -20,7 +23,6 @@ key_dict ={'A':pygame.K_a,'B':pygame.K_b,'C':pygame.K_c,'D':pygame.K_d,'E':pygam
     'Q':pygame.K_q,'R':pygame.K_r,'S':pygame.K_s,'T':pygame.K_t,'U':pygame.K_u,'V':pygame.K_v,'W':pygame.K_w,'X':pygame.K_x,'Y':pygame.K_y,'Z':pygame.K_z}
 
 available = list(key_dict.keys())
-print(available)
 
 index = random.randint(0,len(available)-1)
 jump_letter = available[index]
@@ -32,11 +34,11 @@ prep = key_dict[available[index]]
 available.pop(index)
 index = random.randint(0,len(available)-1)
 shoot_letter = available[index]
-shoot = key_dict[available[index]]
+shoot_key = key_dict[shoot_letter]
 available.pop(index)
 index = random.randint(0,len(available)-1)
 heal_letter = available[index]
-heal = key_dict[available[index]]
+heal_key = key_dict[available[index]]
 available.pop(index)
 
 myfont = pygame.font.SysFont('Arial Bold', 30)
@@ -53,18 +55,16 @@ while run:
             run = False
             quit = True
     k = pygame.key.get_pressed()
-    if(k[pygame.K_KP_ENTER]):
-        print(pygame.K_KP_ENTER)
-        print('starting game')
+    if(k[pygame.K_RETURN] or k[pygame.K_KP_ENTER]):
         break    
 
 if quit:
     pygame.quit()
 if not quit:
-    obj_coord = [1000,1800,2500,2700,2800,3000, 3500,4000,4400,5000]
-    f_coord = [(1500,390),(2000,250)]
+    obj_coord = [1000,1800,2500,2800,3000, 3500,4000,4400,5000,5200,5400,6000,7000,7500,8000]
+    f_coord = [(1500,590),(2000,450),(2300,600),(3100,750),(3800,650),(4100,550),(4200,500),(4350,600),(5100,550),(5200,500),(5350,600),(5800,550),(6200,600),(6300,600),(6400,500),(6900,550),(7100,550),(7300,550),(7700,650)]
 
-    y_position = 450
+    y_position = screen_size - 100
     y_velocity = 0
     run = True
     jump_status = False
@@ -75,6 +75,7 @@ if not quit:
     armed = False
     arming = False
     shoot = False
+    shooting = False
     projectiles = []
     objects = []
     floats = []
@@ -84,21 +85,24 @@ if not quit:
     start = obj_coord[0]
     ending = max(obj_coord[-1],f_coord[-1][0])
     ending = 10000
-
+    curr = 0
     start = time.time()
+    lose = False
     while run :
-        print(len(pygame.event.get()))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                pygame.time.delay(100)
+                pygame.quit()
             
         if(not run):
+            lose = True
             break
         
         
         velocity = int(-8* (energy+10)/100)
         distance_run,run = update_distance(distance_run,velocity,ending)
         if(not run):
+            lose = True
             break
         pygame.time.delay(10)
 
@@ -106,44 +110,51 @@ if not quit:
         win.fill(tuple(clr))
         curr = time.time()
         
-        textsurface = myfont.render(str(curr-start), False, (0, 0, 0))
-
+        textsurface = myfont.render(str(curr-start) , False, (0, 0, 0))
         win.blit(textsurface,(0,0))
-
+        txtsrf = myfont.render(jump_letter+'-jump '+ prep_letter +'-prep  '+ shoot_letter +'-shoot '+ heal_letter +'-heal',False,(0,0,0) )
+        win.blit(txtsrf,(500,0))
 
         projectiles = move_projectiles(projectiles,win)
         objects,run = move_objects(objects,projectiles,y_position,velocity,win)
         if(not run):
+            lose = True
             break
         floats,run = move_floats(floats,projectiles,velocity,y_position,win)
         if(not run):
+            lose = True         
             break
 
-        objects,obj_coord = update_objects(objects,obj_coord,distance_run)
+        objects,obj_coord = update_objects(objects,obj_coord,distance_run,screen_size-100)
 
         floats,f_coord = update_floats(floats,f_coord,distance_run)
 
         counter,energy,run = update_energy(counter,energy)
         if(not run):
+            lose = True            
             break
         
         keys = pygame.key.get_pressed()
         
+
+
+        if keys[jump]:
+            if(not jump_status):
+                jump_status = True
+                y_velocity = 30
         if keys[prep]:
             if(not arming):
                 arming = True
                 armed = True
         else:
-            arming = False    
+            arming = False   
         
-        if not armed:
-            if keys[jump]:
-                if(not jump_status):
-                    jump_status = True
-                    y_velocity = 30
-        else:
+        if(armed):
             pygame.draw.rect(win,(255,0,0),(50,50,10,10))
-            if keys[heal]:
+
+        
+        if armed:
+            if keys[heal_key]:
                 if(not heal):
                     armed = False
                     heal = True
@@ -153,8 +164,9 @@ if not quit:
                     else:
                         energy += 30
             else:
-                heal = False
-            if keys[shoot]:
+                    heal = False
+
+            if keys[shoot_key]:
                 if(not shooting):
                     shooting = True
                     armed = False
@@ -170,7 +182,7 @@ if not quit:
 
         y_position -= y_velocity
 
-        if(y_position >= 450):
+        if(y_position >= screen_size - 100):
             jump_status = False
             y_velocity = 0        
         
@@ -178,10 +190,26 @@ if not quit:
         pygame.draw.rect(win,(50,200,80),(50,y_position,40,60))
         pygame.display.update()
 
+    win.fill(tuple(clr))
+    if(not lose):
+        myfont = pygame.font.SysFont('Arial Bold', 30)
+        initString = 'You win in '+ time
+        textsurface = myfont.render(initString, False, (0, 0, 0))
+        win.blit(textsurface,(100,300))
+        pygame.display.update()
+    else:
+        myfont = pygame.font.SysFont('Arial Bold', 30)
+        initString = 'You lose mate'
+        textsurface = myfont.render(initString, False, (0, 0, 0))
+        win.blit(textsurface,(100,300))
+        pygame.display.update()
 
-    
-    
-    pygame.time.delay(1000)
-    pygame.quit()
+
+
+    print(shoot)
+    for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.time.delay(100)
+                pygame.quit()
 
 

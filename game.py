@@ -98,8 +98,10 @@ if not quit:
             lose = True
             break
         
+        if(distance_run == 1000):
+            pygame.time.delay(10000)
         
-        velocity = int(-8* (energy+10)/100)
+        velocity = int(-7* (energy+10)/100)
         distance_run,run = update_distance(distance_run,velocity,ending)
         if(not run):
             lose = True
